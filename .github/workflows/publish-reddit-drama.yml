@@ -65,7 +65,12 @@ jobs:
           YT_REDDIT_DRAMA_EN_CLIENT_SECRET: ${{ secrets.YT_REDDIT_DRAMA_EN_CLIENT_SECRET }}
           YT_REDDIT_DRAMA_EN_REFRESH_TOKEN: ${{ secrets.YT_REDDIT_DRAMA_EN_REFRESH_TOKEN }}
           DRY_RUN: ${{ inputs.dry_run || 'false' }}
-        run: python cli.py run "$CHANNEL_ID"
+        run: |
+          if [ "$DRY_RUN" = "true" ]; then
+            python cli.py run "$CHANNEL_ID" --dry-run
+          else
+            python cli.py run "$CHANNEL_ID"
+          fi
 
       - name: Persist history
         run: |
