@@ -65,7 +65,7 @@ jobs:
           YT_REDDIT_DRAMA_EN_CLIENT_SECRET: ${{ secrets.YT_REDDIT_DRAMA_EN_CLIENT_SECRET }}
           YT_REDDIT_DRAMA_EN_REFRESH_TOKEN: ${{ secrets.YT_REDDIT_DRAMA_EN_REFRESH_TOKEN }}
           DRY_RUN: ${{ inputs.dry_run || 'false' }}
-          REMOTION_CONCURRENCY: "4"
+          REMOTION_CONCURRENCY: "2"
           REMOTION_RENDER_TIMEOUT_SEC: "5400"
         run: |
           if [ "$DRY_RUN" = "true" ]; then
