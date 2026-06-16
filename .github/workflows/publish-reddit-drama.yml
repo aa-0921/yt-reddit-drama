@@ -72,6 +72,15 @@ jobs:
           git add channels/ai-dev-daily/history.json channels/ai-dev-daily/variation_history.json
           git diff --staged --quiet || (git commit -m "chore: update ai-dev-daily history" && git pull --rebase --autostash && git push)
 
+      - name: Upload artifacts (dry_run preview)
+        if: inputs.dry_run == true
+        uses: actions/upload-artifact@v4
+        with:
+          name: preview-ai-dev-daily-${{ github.run_id }}
+          path: /tmp/yt-auto-*
+          retention-days: 3
+          if-no-files-found: ignore
+
       - name: Upload debug artifacts on failure
         if: failure()
         uses: actions/upload-artifact@v4
