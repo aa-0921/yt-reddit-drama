@@ -1,8 +1,8 @@
 name: Publish Reddit Drama
 
 on:
-  schedule:
-    - cron: "0 14 * * *"
+  # 2026-07-12 監査により定期投稿を停止（fetcher が実データを取れず LLM が実在しない
+  # ツールを捏造して配信していたため即時停止）。再開には fetcher の実データ化が必須
   workflow_dispatch:
     inputs:
       dry_run:
