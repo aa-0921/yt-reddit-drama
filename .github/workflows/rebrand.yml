@@ -1,0 +1,55 @@
+name: Rebrand Channel
+
+# チャンネル転用時のワンショット実行用。ai-dev-daily → world-data-atlas リブランド (2026-07-12)。
+# refresh token は Actions secrets にのみ存在するため、リブランド API 呼び出しもここで実行する
+on:
+  workflow_dispatch:
+    inputs:
+      title:
+        description: "新チャンネル名"
+        required: false
+        type: string
+        default: "データで見る世界"
+      privatize_existing:
+        description: "既存動画を全て非公開化する"
+        required: false
+        type: boolean
+        default: true
+
+jobs:
+  rebrand:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout engine (private)
+        uses: actions/checkout@v4
+        with:
+          repository: aa-0921/youtube-auto-engine
+          token: ${{ secrets.ENGINE_REPO_TOKEN }}
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install dependencies
+        run: pip install google-api-python-client google-auth-oauthlib
+
+      - name: Rebrand channel
+        env:
+          YT_REDDIT_DRAMA_EN_CLIENT_ID: ${{ secrets.YT_REDDIT_DRAMA_EN_CLIENT_ID }}
+          YT_REDDIT_DRAMA_EN_CLIENT_SECRET: ${{ secrets.YT_REDDIT_DRAMA_EN_CLIENT_SECRET }}
+          YT_REDDIT_DRAMA_EN_REFRESH_TOKEN: ${{ secrets.YT_REDDIT_DRAMA_EN_REFRESH_TOKEN }}
+          NEW_TITLE: ${{ inputs.title }}
+          PRIVATIZE: ${{ inputs.privatize_existing }}
+        run: |
+          DESCRIPTION="世界の統計データをバーチャートレースで可視化するチャンネルです。GDP・人口・企業時価総額など、公開統計データ（World Bank / Yahoo Finance 等）の推移をずんだもんと四国めたんが解説します。
+
+          音声合成: VOICEVOX（ずんだもん・四国めたん）
+          台本作成にAI支援ツールを活用しています。"
+          ARGS=(--prefix YT_REDDIT_DRAMA_EN --title "$NEW_TITLE" --description "$DESCRIPTION")
+          if [ "$PRIVATIZE" = "true" ]; then
+            ARGS+=(--privatize-existing)
+          fi
+          python scripts/rebrand_channel.py "${ARGS[@]}"

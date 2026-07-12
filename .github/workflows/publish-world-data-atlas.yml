@@ -1,8 +1,11 @@
-name: Publish Reddit Drama
+name: Publish World Data Atlas
 
+# 2026-07-12 チャンネル転用: ai-dev-daily (捏造コンテンツで停止) → world-data-atlas (データで見る世界)。
+# アカウント (YT_REDDIT_DRAMA_EN secrets) は同一。チャンネル側は rebrand.yml でリブランド済み
 on:
-  # 2026-07-12 監査により定期投稿を停止（fetcher が実データを取れず LLM が実在しない
-  # ツールを捏造して配信していたため即時停止）。再開には fetcher の実データ化が必須
+  schedule:
+    # 火・木・土 09:23 UTC (JST 18:23)。:00/:30 を避けた off-minute
+    - cron: "23 9 * * 2,4,6"
   workflow_dispatch:
     inputs:
       dry_run:
@@ -11,10 +14,20 @@ on:
         type: boolean
         default: false
 
+concurrency:
+  group: publish-world-data-atlas
+  cancel-in-progress: false
+
 jobs:
   publish:
     runs-on: ubuntu-latest
     timeout-minutes: 120
+
+    services:
+      voicevox:
+        image: voicevox/voicevox_engine:cpu-0.25.1
+        ports:
+          - 50021:50021
 
     steps:
       - name: Checkout engine (private)
@@ -36,7 +49,7 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y -qq ffmpeg
+          sudo apt-get install -y -qq ffmpeg fonts-noto-cjk
 
       - name: Install dependencies
         run: |
@@ -49,9 +62,8 @@ jobs:
 
       - name: Run pipeline
         env:
-          CHANNEL_ID: "ai-dev-daily"
+          CHANNEL_ID: "world-data-atlas"
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
-          PRODUCT_HUNT_API_TOKEN: ${{ secrets.PRODUCT_HUNT_API_TOKEN }}
           YT_REDDIT_DRAMA_EN_CLIENT_ID: ${{ secrets.YT_REDDIT_DRAMA_EN_CLIENT_ID }}
           YT_REDDIT_DRAMA_EN_CLIENT_SECRET: ${{ secrets.YT_REDDIT_DRAMA_EN_CLIENT_SECRET }}
           YT_REDDIT_DRAMA_EN_REFRESH_TOKEN: ${{ secrets.YT_REDDIT_DRAMA_EN_REFRESH_TOKEN }}
@@ -69,14 +81,14 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add channels/ai-dev-daily/history.json channels/ai-dev-daily/variation_history.json
-          git diff --staged --quiet || (git commit -m "chore: update ai-dev-daily history" && git pull --rebase --autostash && git push)
+          git add channels/world-data-atlas/history.json channels/world-data-atlas/variation_history.json
+          git diff --staged --quiet || (git commit -m "chore: update world-data-atlas history" && git pull --rebase --autostash && git push)
 
       - name: Upload artifacts (dry_run preview)
         if: inputs.dry_run == true
         uses: actions/upload-artifact@v4
         with:
-          name: preview-ai-dev-daily-${{ github.run_id }}
+          name: preview-world-data-atlas-${{ github.run_id }}
           path: /tmp/yt-auto-*
           retention-days: 3
           if-no-files-found: ignore
@@ -85,7 +97,7 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: debug-ai-dev-daily-${{ github.run_id }}
+          name: debug-world-data-atlas-${{ github.run_id }}
           path: /tmp/yt-auto-*
           retention-days: 3
           if-no-files-found: ignore
