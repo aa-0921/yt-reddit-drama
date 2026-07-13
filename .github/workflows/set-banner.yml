@@ -1,0 +1,36 @@
+name: Set Channel Banner
+
+# チャンネルバナー設定用のワンショット実行。refresh token は Actions secrets にのみ存在するためここで実行する。
+# バナー画像は engine 側 channels/world-data-atlas/assets/banner.png
+on:
+  workflow_dispatch:
+
+jobs:
+  set-banner:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout engine (private)
+        uses: actions/checkout@v4
+        with:
+          repository: aa-0921/youtube-auto-engine
+          token: ${{ secrets.ENGINE_REPO_TOKEN }}
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install dependencies
+        run: pip install google-api-python-client google-auth-oauthlib
+
+      - name: Upload banner
+        env:
+          YT_REDDIT_DRAMA_EN_CLIENT_ID: ${{ secrets.YT_REDDIT_DRAMA_EN_CLIENT_ID }}
+          YT_REDDIT_DRAMA_EN_CLIENT_SECRET: ${{ secrets.YT_REDDIT_DRAMA_EN_CLIENT_SECRET }}
+          YT_REDDIT_DRAMA_EN_REFRESH_TOKEN: ${{ secrets.YT_REDDIT_DRAMA_EN_REFRESH_TOKEN }}
+        run: |
+          python scripts/upload_banner.py \
+            --prefix YT_REDDIT_DRAMA_EN \
+            --image channels/world-data-atlas/assets/banner.png
